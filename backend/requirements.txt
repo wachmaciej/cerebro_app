@@ -14,3 +14,4 @@ python-multipart==0.0.9
 httpx==0.27.0
 db-dtypes==1.3.0
 pyarrow==14.0.1
+numpy<2
