@@ -1,0 +1,36 @@
+# ── Credentials & secrets ──────────────────────────────────────────────────────
+.env
+*.json.key
+backend/cerebro_fetcher/*.json
+backend/cerebro_fetcher/token.pickle
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# ── Celery generated files ──────────────────────────────────────────────────────
+backend/celerybeat-schedule.*
+backend/celerybeat/
+
+# ── Log files ──────────────────────────────────────────────────────────────────
+*.log
+
+# ── Node / Next.js ─────────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env.production
+
+# ── OS ─────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

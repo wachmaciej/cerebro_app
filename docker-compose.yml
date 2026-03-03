@@ -1,0 +1,104 @@
+version: '3.8'
+
+networks:
+  cerebro_net:
+    driver: bridge
+
+services:
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    networks:
+      - cerebro_net
+    # No ports exposed — only accessible inside the Docker network
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    networks:
+      - cerebro_net
+    # Allows containers to reach PostgreSQL running on the VPS host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json
+    volumes:
+      - ./backend/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:ro
+    depends_on:
+      - redis
+
+  celery_worker:
+    build:
+      context: ./backend
+    restart: always
+    networks:
+      - cerebro_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json
+    volumes:
+      - ./backend/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:ro
+    depends_on:
+      - redis
+      - backend
+    command: celery -A celery_worker worker --loglevel=info --pool=solo
+
+  celery_beat:
+    build:
+      context: ./backend
+    restart: always
+    networks:
+      - cerebro_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - ./backend/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json
+    volumes:
+      - ./backend/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:ro
+      # Persist the beat schedule so it survives container restarts
+      - celerybeat_data:/app/celerybeat
+    depends_on:
+      - redis
+      - backend
+    command: celery -A celery_worker beat --loglevel=info --schedule=/app/celerybeat/celerybeat-schedule
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Nginx serves everything on port 80 — /api/* goes to backend, /* goes to frontend
+        # So the browser only ever talks to one URL: your VPS IP (or domain)
+        - NEXT_PUBLIC_API_URL=http://31.97.119.125
+    restart: always
+    networks:
+      - cerebro_net
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    restart: always
+    networks:
+      - cerebro_net
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  celerybeat_data:
