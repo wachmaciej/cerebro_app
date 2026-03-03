@@ -43,6 +43,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - GOOGLE_APPLICATION_CREDENTIALS=/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json
+      - PYTHONPATH=/app
     volumes:
       - ./backend/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:ro
     depends_on:
@@ -63,6 +64,7 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379/0
       - GOOGLE_APPLICATION_CREDENTIALS=/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json
+      - PYTHONPATH=/app
     volumes:
       - ./backend/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:/app/cerebro_fetcher/morpheus-sql-database-885f6d117879.json:ro
       - celerybeat_data:/app/celerybeat
