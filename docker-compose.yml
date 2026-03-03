@@ -75,7 +75,7 @@ services:
     build:
       context: ./frontend
       args:
-        - NEXT_PUBLIC_API_URL=http://cerebro.royalandawesome.co.uk
+        - NEXT_PUBLIC_API_URL=http://cerebro.afgmedia.co.uk
     restart: always
     networks:
       - cerebro_net
